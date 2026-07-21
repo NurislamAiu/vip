@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_theme.dart';
 import '../core/utils/auto_status.dart';
 import '../core/utils/formatters.dart';
 import '../models/client.dart';
@@ -55,8 +54,6 @@ class ClientCard extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
                       child: Row(
                         children: [
-                          _Avatar(name: client.name, color: client.status.color),
-                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,6 +92,13 @@ class ClientCard extends StatelessWidget {
                                   icon: Icons.call_rounded,
                                   text: _subtitle(client),
                                 ),
+                                if (client.driverName.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 3),
+                                  _MetaLine(
+                                    icon: Icons.directions_car_rounded,
+                                    text: 'Встречает: ${client.driverName.trim()}',
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -213,43 +217,6 @@ class _MetaLine extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.name, required this.color});
-
-  final String name;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = name.trim().isEmpty
-        ? '?'
-        : name
-            .trim()
-            .split(RegExp(r'\s+'))
-            .take(2)
-            .map((w) => w[0].toUpperCase())
-            .join();
-    return Container(
-      width: 44,
-      height: 44,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        gradient: AppColors.brandGradient,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: color.withValues(alpha: 0.6), width: 2),
-      ),
-      child: Text(
-        initials,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-        ),
-      ),
     );
   }
 }
