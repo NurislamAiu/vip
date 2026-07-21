@@ -16,6 +16,7 @@ import '../../providers/settings_providers.dart';
 import '../../widgets/brand_mark.dart';
 import '../../widgets/client_card.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/status_picker.dart';
 import '../client/client_detail_screen.dart';
 import '../client/client_form_screen.dart';
 import '../managers/managers_screen.dart';
@@ -77,6 +78,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void _applyAutomation(List<Client> clients, ReminderSettings settings) {
     ref.read(reminderServiceProvider).sync(clients, settings);
     if (settings.autoStatus) _reconcileStatuses(clients);
+  }
+
+  /// Quick status change straight from the list — tap a card's status badge.
+  Future<void> _quickChangeStatus(BuildContext context, Client client) async {
+    final picked =
+        await showStatusPickerSheet(context, current: client.status);
+    if (picked == null || picked == client.status) return;
+    try {
+      await ref
+          .read(clientRepositoryProvider)
+          .updateClient(client.copyWith(status: picked));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Статус: ${picked.label}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Не удалось изменить статус: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -152,6 +176,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         final client = filtered[index];
                         return ClientCard(
                           client: client,
+                          onStatusTap: () =>
+                              _quickChangeStatus(context, client),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) =>

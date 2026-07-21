@@ -9,10 +9,18 @@ import 'status_badge.dart';
 /// the single most relevant upcoming event, and who added the client. Kept
 /// short on purpose so long VIP lists stay readable.
 class ClientCard extends StatelessWidget {
-  const ClientCard({super.key, required this.client, required this.onTap});
+  const ClientCard({
+    super.key,
+    required this.client,
+    required this.onTap,
+    this.onStatusTap,
+  });
 
   final Client client;
   final VoidCallback onTap;
+
+  /// Tapping the status badge triggers a quick status change (from the list).
+  final VoidCallback? onStatusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +81,26 @@ class ClientCard extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    StatusBadge(
-                                      status: client.status,
-                                      dense: true,
-                                      filled: true,
+                                    GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: onStatusTap,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          StatusBadge(
+                                            status: client.status,
+                                            dense: true,
+                                            filled: true,
+                                          ),
+                                          if (onStatusTap != null)
+                                            Icon(
+                                              Icons.expand_more_rounded,
+                                              size: 18,
+                                              color: theme
+                                                  .colorScheme.onSurfaceVariant,
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
