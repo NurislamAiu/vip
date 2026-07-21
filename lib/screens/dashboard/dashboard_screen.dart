@@ -358,7 +358,7 @@ class _SearchField extends ConsumerWidget {
         onChanged: (value) =>
             ref.read(clientSearchProvider.notifier).state = value,
         decoration: InputDecoration(
-          hintText: 'Поиск: имя, телефон, №, отель, водитель…',
+          hintText: 'Поиск: имя, телефон, отель, водитель…',
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: query.isEmpty
               ? null

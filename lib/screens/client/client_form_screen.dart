@@ -44,15 +44,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     super.initState();
     final c = widget.client;
     _controllers = {
-      'clientNumber': TextEditingController(text: c?.clientNumber),
       'name': TextEditingController(text: c?.name),
       'phone': TextEditingController(text: c?.phone),
       'country': TextEditingController(text: c?.country),
-      'city': TextEditingController(text: c?.city),
-      'arrivalFlight': TextEditingController(text: c?.arrivalFlight),
       'hotel': TextEditingController(text: c?.hotel),
-      'doctorName': TextEditingController(text: c?.doctorName),
-      'departureFlight': TextEditingController(text: c?.departureFlight),
       'driverName': TextEditingController(text: c?.driverName),
       'driverPhone': TextEditingController(text: c?.driverPhone),
       'notes': TextEditingController(text: c?.notes),
@@ -95,21 +90,16 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
         Client(id: '', clientNumber: '', name: '', phone: '');
 
     final client = base.copyWith(
-      clientNumber: _text('clientNumber'),
       name: _text('name'),
       phone: _text('phone'),
       country: _text('country'),
-      city: _text('city'),
       arrivalDate: _arrivalDate,
       arrivalTime: _timeString(_arrivalTime),
-      arrivalFlight: _text('arrivalFlight'),
       hotel: _text('hotel'),
-      doctorName: _text('doctorName'),
       doctorAppointmentDate: _appointmentDate,
       doctorAppointmentTime: _timeString(_appointmentTime),
       departureDate: _departureDate,
       departureTime: _timeString(_departureTime),
-      departureFlight: _text('departureFlight'),
       driverName: _text('driverName'),
       driverPhone: _text('driverPhone'),
       status: _status,
@@ -156,9 +146,6 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               icon: Icons.person_rounded,
               child: Column(
                 children: [
-                  _field('clientNumber', 'Номер клиента',
-                      icon: Icons.tag_rounded,
-                      keyboardType: TextInputType.number),
                   _field('name', 'ФИО',
                       icon: Icons.badge_rounded,
                       validator: (v) =>
@@ -167,9 +154,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                       icon: Icons.phone_rounded,
                       keyboardType: TextInputType.phone,
                       validator: Validators.phone),
-                  _field('country', 'Страна', icon: Icons.public_rounded),
-                  _field('city', 'Город',
-                      icon: Icons.location_city_rounded, isLast: true),
+                  _field('country', 'Страна',
+                      icon: Icons.public_rounded, isLast: true),
                 ],
               ),
             ),
@@ -178,18 +164,11 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               title: 'Прибытие',
               icon: Icons.flight_land_rounded,
               accent: ClientStatus.awaitingArrival.color,
-              child: Column(
-                children: [
-                  _dateTimeRow(
-                    date: _arrivalDate,
-                    time: _arrivalTime,
-                    onDate: (d) => setState(() => _arrivalDate = d),
-                    onTime: (t) => setState(() => _arrivalTime = t),
-                  ),
-                  const SizedBox(height: 12),
-                  _field('arrivalFlight', 'Номер рейса',
-                      icon: Icons.confirmation_number_rounded, isLast: true),
-                ],
+              child: _dateTimeRow(
+                date: _arrivalDate,
+                time: _arrivalTime,
+                onDate: (d) => setState(() => _arrivalDate = d),
+                onTime: (t) => setState(() => _arrivalTime = t),
               ),
             ),
             const SizedBox(height: 16),
@@ -205,17 +184,11 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               title: 'Приём у врача',
               icon: Icons.medical_services_rounded,
               accent: ClientStatus.inTreatment.color,
-              child: Column(
-                children: [
-                  _field('doctorName', 'Имя врача',
-                      icon: Icons.health_and_safety_rounded),
-                  _dateTimeRow(
-                    date: _appointmentDate,
-                    time: _appointmentTime,
-                    onDate: (d) => setState(() => _appointmentDate = d),
-                    onTime: (t) => setState(() => _appointmentTime = t),
-                  ),
-                ],
+              child: _dateTimeRow(
+                date: _appointmentDate,
+                time: _appointmentTime,
+                onDate: (d) => setState(() => _appointmentDate = d),
+                onTime: (t) => setState(() => _appointmentTime = t),
               ),
             ),
             const SizedBox(height: 16),
@@ -223,18 +196,11 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               title: 'Вылет',
               icon: Icons.flight_takeoff_rounded,
               accent: ClientStatus.departed.color,
-              child: Column(
-                children: [
-                  _dateTimeRow(
-                    date: _departureDate,
-                    time: _departureTime,
-                    onDate: (d) => setState(() => _departureDate = d),
-                    onTime: (t) => setState(() => _departureTime = t),
-                  ),
-                  const SizedBox(height: 12),
-                  _field('departureFlight', 'Номер обратного рейса',
-                      icon: Icons.confirmation_number_rounded, isLast: true),
-                ],
+              child: _dateTimeRow(
+                date: _departureDate,
+                time: _departureTime,
+                onDate: (d) => setState(() => _departureDate = d),
+                onTime: (t) => setState(() => _departureTime = t),
               ),
             ),
             const SizedBox(height: 16),

@@ -136,11 +136,6 @@ class _DetailBody extends StatelessWidget {
           child: Column(
             children: [
               DetailRow(
-                icon: Icons.tag_rounded,
-                label: 'Номер клиента',
-                value: Formatters.text(client.clientNumber),
-              ),
-              DetailRow(
                 icon: Icons.phone_rounded,
                 label: 'Телефон',
                 value: Formatters.text(client.phone),
@@ -149,11 +144,6 @@ class _DetailBody extends StatelessWidget {
                 icon: Icons.public_rounded,
                 label: 'Страна',
                 value: Formatters.text(client.country),
-              ),
-              DetailRow(
-                icon: Icons.location_city_rounded,
-                label: 'Город',
-                value: Formatters.text(client.city),
               ),
             ],
           ),
@@ -174,11 +164,6 @@ class _DetailBody extends StatelessWidget {
                 label: 'Время',
                 value: Formatters.time(client.arrivalTime),
               ),
-              DetailRow(
-                icon: Icons.confirmation_number_rounded,
-                label: 'Рейс',
-                value: Formatters.text(client.arrivalFlight),
-              ),
             ],
           ),
         ),
@@ -198,11 +183,6 @@ class _DetailBody extends StatelessWidget {
           icon: Icons.medical_services_rounded,
           child: Column(
             children: [
-              DetailRow(
-                icon: Icons.health_and_safety_rounded,
-                label: 'Врач',
-                value: Formatters.text(client.doctorName),
-              ),
               DetailRow(
                 icon: Icons.calendar_today_rounded,
                 label: 'Дата',
@@ -231,11 +211,6 @@ class _DetailBody extends StatelessWidget {
                 icon: Icons.schedule_rounded,
                 label: 'Время',
                 value: Formatters.time(client.departureTime),
-              ),
-              DetailRow(
-                icon: Icons.confirmation_number_rounded,
-                label: 'Обратный рейс',
-                value: Formatters.text(client.departureFlight),
               ),
             ],
           ),
@@ -300,26 +275,6 @@ class _HeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: AppColors.goldGradient,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  '#${Formatters.text(client.clientNumber)}',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: AppColors.onGold,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Text(
             Formatters.text(client.name),
             style: theme.textTheme.headlineSmall?.copyWith(
