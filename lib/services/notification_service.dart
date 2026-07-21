@@ -11,6 +11,26 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // hook exists so background delivery is registered.
 }
 
+/// Snapshot of the device's push-notification readiness, shown in Settings so
+/// the user can see whether server (FCM) pushes can reach this device.
+class NotificationDiagnostics {
+  const NotificationDiagnostics({
+    required this.permission,
+    this.apnsToken,
+    this.fcmToken,
+    this.isApple = false,
+    this.error,
+  });
+
+  final String permission; // authorized / denied / notDetermined / ...
+  final String? apnsToken;
+  final String? fcmToken;
+  final bool isApple;
+  final String? error;
+
+  bool get canReceivePush => fcmToken != null && permission == 'authorized';
+}
+
 /// Wires up Firebase Cloud Messaging and mirrors foreground pushes into the
 /// system tray via local notifications.
 ///
@@ -94,6 +114,44 @@ class NotificationService {
       await Future<void>.delayed(const Duration(seconds: 1));
     }
     return _messaging.getAPNSToken();
+  }
+
+  /// Gathers the current push readiness for the Settings diagnostics panel.
+  Future<NotificationDiagnostics> diagnostics() async {
+    final isApple = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS);
+    try {
+      final settings = await _messaging.getNotificationSettings();
+      final permission = settings.authorizationStatus.name;
+
+      String? apns;
+      if (isApple) apns = await _messaging.getAPNSToken();
+
+      String? fcm;
+      try {
+        // On Apple, getToken needs the APNS token first; on the simulator it
+        // is absent, so we simply report "unavailable".
+        if (!isApple || apns != null) {
+          fcm = await _messaging.getToken();
+        }
+      } catch (e) {
+        debugPrint('diagnostics getToken failed: $e');
+      }
+
+      return NotificationDiagnostics(
+        permission: permission,
+        apnsToken: apns,
+        fcmToken: fcm,
+        isApple: isApple,
+      );
+    } catch (e) {
+      return NotificationDiagnostics(
+        permission: 'unknown',
+        isApple: isApple,
+        error: '$e',
+      );
+    }
   }
 
   void _showForeground(RemoteMessage message) {

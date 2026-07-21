@@ -5,11 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/reminder_settings.dart';
+import '../services/notification_service.dart';
 import '../services/reminder_service.dart';
+import 'repository_providers.dart';
 
 /// Single shared reminder scheduler.
 final reminderServiceProvider = Provider<ReminderService>((ref) {
   return ReminderService();
+});
+
+/// Live push-readiness snapshot for the Settings diagnostics panel.
+final notificationDiagnosticsProvider =
+    FutureProvider.autoDispose<NotificationDiagnostics>((ref) {
+  return ref.read(notificationServiceProvider).diagnostics();
 });
 
 /// Manager-configured, per-device reminder preferences, persisted locally.

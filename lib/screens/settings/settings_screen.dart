@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/client_status.dart';
@@ -87,9 +88,187 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 24),
+          Text(
+            'Диагностика',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const _DiagnosticsCard(),
         ],
       ),
     );
+  }
+}
+
+/// Shows whether server (FCM) push notifications can reach this device.
+class _DiagnosticsCard extends ConsumerWidget {
+  const _DiagnosticsCard();
+
+  static String _perm(String value) => switch (value) {
+        'authorized' => 'Разрешены',
+        'denied' => 'Запрещены',
+        'notDetermined' => 'Не запрошены',
+        'provisional' => 'Тихие',
+        _ => value,
+      };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final async = ref.watch(notificationDiagnosticsProvider);
+
+    return SectionCard(
+      title: 'Серверные push-уведомления',
+      icon: Icons.podcasts_rounded,
+      child: async.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2.2),
+              ),
+              SizedBox(width: 12),
+              Text('Проверяем готовность устройства…'),
+            ],
+          ),
+        ),
+        error: (e, _) => Text('Не удалось проверить: $e'),
+        data: (d) {
+          final ok = d.canReceivePush;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: (ok ? const Color(0xFF10B981) : theme.colorScheme.error)
+                      .withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      ok
+                          ? Icons.check_circle_rounded
+                          : Icons.error_outline_rounded,
+                      color: ok
+                          ? const Color(0xFF10B981)
+                          : theme.colorScheme.error,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        ok
+                            ? 'Устройство готово принимать серверные пуши.'
+                            : 'Серверные пуши на это устройство не дойдут '
+                                '(нужен реальный iPhone + APNs-ключ).',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              _Row(label: 'Разрешение', value: _perm(d.permission)),
+              if (d.isApple)
+                _Row(
+                  label: 'APNS-токен',
+                  value: d.apnsToken != null
+                      ? 'есть'
+                      : 'нет (симулятор не выдаёт)',
+                ),
+              _TokenRow(token: d.fcmToken),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: () =>
+                        ref.invalidate(notificationDiagnosticsProvider),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Обновить'),
+                  ),
+                  if (d.fcmToken != null)
+                    TextButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(
+                            ClipboardData(text: d.fcmToken!));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('FCM-токен скопирован')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      label: const Text('Скопировать токен'),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  const _Row({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TokenRow extends StatelessWidget {
+  const _TokenRow({required this.token});
+
+  final String? token;
+
+  @override
+  Widget build(BuildContext context) {
+    final String short;
+    if (token == null) {
+      short = 'недоступен';
+    } else {
+      final n = token!.length < 14 ? token!.length : 14;
+      short = '${token!.substring(0, n)}…';
+    }
+    return _Row(label: 'FCM-токен', value: short);
   }
 }
 
