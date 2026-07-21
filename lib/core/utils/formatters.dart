@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 class Formatters {
   Formatters._();
 
-  static final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
-  static final DateFormat _shortDateFormat = DateFormat('dd MMM');
+  static final DateFormat _dateFormat = DateFormat('d MMM yyyy', 'ru');
+  static final DateFormat _shortDateFormat = DateFormat('d MMM', 'ru');
 
   static String date(DateTime? value) =>
       value == null ? '—' : _dateFormat.format(value);

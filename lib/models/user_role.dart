@@ -19,7 +19,7 @@ enum UserRole {
   }
 
   String get label => switch (this) {
-        UserRole.administrator => 'Administrator',
-        UserRole.manager => 'Manager',
+        UserRole.administrator => 'Администратор',
+        UserRole.manager => 'Менеджер',
       };
 }

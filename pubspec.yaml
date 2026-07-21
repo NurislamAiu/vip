@@ -11,6 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Localization (Russian UI: Material/Cupertino strings, date pickers)
+  flutter_localizations:
+    sdk: flutter
+
   cupertino_icons: ^1.0.8
 
   # State management

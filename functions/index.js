@@ -41,8 +41,8 @@ exports.onClientCreated = onDocumentCreated("clients/{id}", (event) => {
   const client = event.data.data();
   if (!client) return null;
   return notify(
-    "New client",
-    `${client.name || "A client"} was added (#${client.clientNumber || "—"}).`,
+    "Новый клиент",
+    `Добавлен клиент ${client.name || ""} (№${client.clientNumber || "—"}).`,
     { type: "client_created", clientId: event.params.id },
   );
 });
@@ -65,8 +65,8 @@ exports.onClientUpdated = onDocumentUpdated("clients/{id}", (event) => {
   if (!changed) return null;
 
   return notify(
-    "Client updated",
-    `${after.name || "A client"} was updated (#${after.clientNumber || "—"}).`,
+    "Клиент обновлён",
+    `Обновлён клиент ${after.name || ""} (№${after.clientNumber || "—"}).`,
     { type: "client_updated", clientId: event.params.id },
   );
 });
@@ -105,8 +105,8 @@ exports.sendReminders = onSchedule("every 15 minutes", async () => {
     if (arrival && !c.remindedArrival) {
       const mins = (arrival - now) / 60000;
       if (mins > 105 && mins <= 120) {
-        jobs.push(notify("Arrival in ~2 hours",
-          `${c.name} arrives at ${c.arrivalTime || "soon"}.`,
+        jobs.push(notify("Прибытие через ~2 часа",
+          `${c.name} прибывает в ${c.arrivalTime || "ближайшее время"}.`,
           { type: "arrival_soon", clientId: doc.id }));
         patch.remindedArrival = true;
       }
@@ -117,8 +117,8 @@ exports.sendReminders = onSchedule("every 15 minutes", async () => {
     if (appt && !c.remindedAppointment) {
       const mins = (appt - now) / 60000;
       if (mins > 15 && mins <= 30) {
-        jobs.push(notify("Appointment in ~30 minutes",
-          `${c.name} sees ${c.doctorName || "the doctor"} at ${c.doctorAppointmentTime || "soon"}.`,
+        jobs.push(notify("Приём через ~30 минут",
+          `${c.name} — приём у ${c.doctorName || "врача"} в ${c.doctorAppointmentTime || "ближайшее время"}.`,
           { type: "appointment_soon", clientId: doc.id }));
         patch.remindedAppointment = true;
       }
@@ -128,8 +128,8 @@ exports.sendReminders = onSchedule("every 15 minutes", async () => {
     if (c.departureDate && !c.remindedDeparture) {
       const dep = c.departureDate.toDate();
       if (isSameDay(dep, now)) {
-        jobs.push(notify("Departure today",
-          `${c.name} departs today${c.departureTime ? " at " + c.departureTime : ""}.`,
+        jobs.push(notify("Вылет сегодня",
+          `${c.name} улетает сегодня${c.departureTime ? " в " + c.departureTime : ""}.`,
           { type: "departure_today", clientId: doc.id }));
         patch.remindedDeparture = true;
       }

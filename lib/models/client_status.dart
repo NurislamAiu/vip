@@ -22,13 +22,13 @@ enum ClientStatus {
   }
 
   String get label => switch (this) {
-        ClientStatus.awaitingArrival => 'Awaiting arrival',
-        ClientStatus.met => 'Met',
-        ClientStatus.inHotel => 'In hotel',
-        ClientStatus.inTreatment => 'In treatment',
-        ClientStatus.preparingDeparture => 'Preparing departure',
-        ClientStatus.departed => 'Departed',
-        ClientStatus.completed => 'Completed',
+        ClientStatus.awaitingArrival => 'Ожидает прибытия',
+        ClientStatus.met => 'Встречен',
+        ClientStatus.inHotel => 'В отеле',
+        ClientStatus.inTreatment => 'На лечении',
+        ClientStatus.preparingDeparture => 'Готовится к вылету',
+        ClientStatus.departed => 'Улетел',
+        ClientStatus.completed => 'Завершён',
       };
 
   Color get color => switch (this) {

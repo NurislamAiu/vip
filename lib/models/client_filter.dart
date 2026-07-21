@@ -12,13 +12,13 @@ enum ClientFilter {
   completed;
 
   String get label => switch (this) {
-        ClientFilter.all => 'All',
-        ClientFilter.arrivingToday => 'Arriving today',
-        ClientFilter.departingToday => 'Departing today',
-        ClientFilter.appointmentToday => 'Appointment today',
-        ClientFilter.inHotel => 'In hotel',
-        ClientFilter.inTreatment => 'In treatment',
-        ClientFilter.completed => 'Completed',
+        ClientFilter.all => 'Все',
+        ClientFilter.arrivingToday => 'Прибывают сегодня',
+        ClientFilter.departingToday => 'Улетают сегодня',
+        ClientFilter.appointmentToday => 'Приём сегодня',
+        ClientFilter.inHotel => 'В отеле',
+        ClientFilter.inTreatment => 'На лечении',
+        ClientFilter.completed => 'Завершённые',
       };
 
   bool _isSameDay(DateTime? a, DateTime b) =>

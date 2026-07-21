@@ -68,7 +68,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           MaterialPageRoute(builder: (_) => const ClientFormScreen()),
         ),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Add client'),
+        label: const Text('Добавить клиента'),
       ),
       body: SafeArea(
         bottom: false,
@@ -90,7 +90,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   hasScrollBody: false,
                   child: EmptyState(
                     icon: Icons.cloud_off_rounded,
-                    title: 'Could not load clients',
+                    title: 'Не удалось загрузить клиентов',
                     message: '$e',
                   ),
                 ),
@@ -100,8 +100,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       hasScrollBody: false,
                       child: EmptyState(
                         icon: Icons.people_outline_rounded,
-                        title: 'No clients found',
-                        message: 'Adjust your search or add a new client.',
+                        title: 'Клиенты не найдены',
+                        message: 'Измените поиск или добавьте нового клиента.',
                       ),
                     );
                   }
@@ -144,16 +144,16 @@ class _HeroHeader extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will need to sign in again to continue.'),
+        title: const Text('Выйти из аккаунта?'),
+        content: const Text('Чтобы продолжить, нужно будет войти снова.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Отмена'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign out'),
+            child: const Text('Выйти'),
           ),
         ],
       ),
@@ -204,7 +204,7 @@ class _HeroHeader extends ConsumerWidget {
                     Row(
                       children: [
                         Text(
-                          'Welcome back',
+                          'С возвращением',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.85),
                           ),
@@ -215,7 +215,7 @@ class _HeroHeader extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      user?.name ?? 'VIP Manager',
+                      user?.name ?? 'VIP-менеджер',
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -229,7 +229,7 @@ class _HeroHeader extends ConsumerWidget {
               if (user?.isAdmin ?? false)
                 _GlassIconButton(
                   icon: Icons.group_rounded,
-                  tooltip: 'Managers',
+                  tooltip: 'Сотрудники',
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const ManagersScreen()),
                   ),
@@ -237,7 +237,7 @@ class _HeroHeader extends ConsumerWidget {
               const SizedBox(width: 8),
               _GlassIconButton(
                 icon: Icons.logout_rounded,
-                tooltip: 'Sign out',
+                tooltip: 'Выйти',
                 onPressed: () => _confirmSignOut(context, ref),
               ),
             ],
@@ -247,19 +247,19 @@ class _HeroHeader extends ConsumerWidget {
             children: [
               _StatTile(
                 value: '${clients.length}',
-                label: 'Clients',
+                label: 'Клиентов',
                 icon: Icons.people_alt_rounded,
               ),
               const SizedBox(width: 12),
               _StatTile(
                 value: '$arrivingToday',
-                label: 'Arriving today',
+                label: 'Прибывают',
                 icon: Icons.flight_land_rounded,
               ),
               const SizedBox(width: 12),
               _StatTile(
                 value: '$inTreatment',
-                label: 'In treatment',
+                label: 'На лечении',
                 icon: Icons.medical_services_rounded,
               ),
             ],
@@ -358,7 +358,7 @@ class _SearchField extends ConsumerWidget {
         onChanged: (value) =>
             ref.read(clientSearchProvider.notifier).state = value,
         decoration: InputDecoration(
-          hintText: 'Search name, phone, №, hotel, driver…',
+          hintText: 'Поиск: имя, телефон, №, отель, водитель…',
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: query.isEmpty
               ? null

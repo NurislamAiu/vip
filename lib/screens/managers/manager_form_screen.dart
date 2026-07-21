@@ -82,13 +82,13 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text(widget.isEditing ? 'Staff updated' : 'Staff created'),
+              Text(widget.isEditing ? 'Сотрудник обновлён' : 'Сотрудник создан'),
         ),
       );
     } on FirebaseAuthException catch (e) {
       _fail(_authMessage(e));
     } catch (e) {
-      _fail('Could not save: $e');
+      _fail('Не удалось сохранить: $e');
     }
   }
 
@@ -100,17 +100,17 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
   }
 
   String _authMessage(FirebaseAuthException e) => switch (e.code) {
-        'email-already-in-use' => 'That email is already registered.',
-        'invalid-email' => 'That email address is not valid.',
-        'weak-password' => 'Password is too weak (min 6 characters).',
-        _ => 'Could not create account: ${e.message}',
+        'email-already-in-use' => 'Эта почта уже зарегистрирована.',
+        'invalid-email' => 'Некорректный адрес эл. почты.',
+        'weak-password' => 'Слишком простой пароль (минимум 6 символов).',
+        _ => 'Не удалось создать аккаунт: ${e.message}',
       };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit staff' : 'New staff'),
+        title: Text(widget.isEditing ? 'Изменить сотрудника' : 'Новый сотрудник'),
       ),
       body: Form(
         key: _formKey,
@@ -118,24 +118,24 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
           children: [
             SectionCard(
-              title: 'Profile',
+              title: 'Профиль',
               icon: Icons.person_rounded,
               child: Column(
                 children: [
                   TextFormField(
                     controller: _name,
                     decoration: const InputDecoration(
-                      labelText: 'Full name',
+                      labelText: 'ФИО',
                       prefixIcon: Icon(Icons.badge_rounded),
                     ),
-                    validator: (v) => Validators.required(v, field: 'Name'),
+                    validator: (v) => Validators.required(v, field: 'ФИО'),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _phone,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      labelText: 'Phone',
+                      labelText: 'Телефон',
                       prefixIcon: Icon(Icons.phone_rounded),
                     ),
                     validator: Validators.phone,
@@ -145,7 +145,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Credentials',
+              title: 'Учётные данные',
               icon: Icons.lock_rounded,
               child: Column(
                 children: [
@@ -154,7 +154,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
                     enabled: !widget.isEditing,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
+                      labelText: 'Эл. почта',
                       prefixIcon: Icon(Icons.mail_outline_rounded),
                     ),
                     validator: Validators.email,
@@ -165,7 +165,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
                       controller: _password,
                       obscureText: _obscure,
                       decoration: InputDecoration(
-                        labelText: 'Temporary password',
+                        labelText: 'Временный пароль',
                         prefixIcon: const Icon(Icons.password_rounded),
                         suffixIcon: IconButton(
                           icon: Icon(_obscure
@@ -181,7 +181,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
                       child: Text(
-                        'Email and password cannot be changed here.',
+                        'Почту и пароль здесь изменить нельзя.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
@@ -194,7 +194,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Role',
+              title: 'Роль',
               icon: Icons.shield_rounded,
               child: RadioGroup<UserRole>(
                 groupValue: _role,
@@ -207,8 +207,8 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
                       title: Text(role.label),
                       subtitle: Text(
                         role.isAdmin
-                            ? 'Full access, including deletion and staff management'
-                            : 'Can view, create and edit clients',
+                            ? 'Полный доступ, включая удаление и управление сотрудниками'
+                            : 'Может просматривать, создавать и изменять клиентов',
                       ),
                     );
                   }).toList(),
@@ -226,7 +226,7 @@ class _ManagerFormScreenState extends ConsumerState<ManagerFormScreen> {
                           strokeWidth: 2.4, color: Colors.white),
                     )
                   : const Icon(Icons.check_rounded),
-              label: Text(widget.isEditing ? 'Save changes' : 'Create staff'),
+              label: Text(widget.isEditing ? 'Сохранить изменения' : 'Создать сотрудника'),
             ),
           ],
         ),

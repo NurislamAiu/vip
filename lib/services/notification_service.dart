@@ -27,8 +27,8 @@ class NotificationService {
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'vip_clients',
-    'Client updates',
-    description: 'Arrivals, appointments, departures and client changes.',
+    'Обновления по клиентам',
+    description: 'Прибытия, приёмы, вылеты и изменения по клиентам.',
     importance: Importance.high,
   );
 

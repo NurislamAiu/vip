@@ -127,7 +127,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            widget.isEditing ? 'Client updated' : 'Client added',
+            widget.isEditing ? 'Клиент обновлён' : 'Клиент добавлен',
           ),
         ),
       );
@@ -135,7 +135,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save: $e')),
+        SnackBar(content: Text('Не удалось сохранить: $e')),
       );
     }
   }
@@ -144,7 +144,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit client' : 'New client'),
+        title: Text(widget.isEditing ? 'Изменить клиента' : 'Новый клиент'),
       ),
       body: Form(
         key: _formKey,
@@ -152,30 +152,30 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
           children: [
             SectionCard(
-              title: 'Personal information',
+              title: 'Личные данные',
               icon: Icons.person_rounded,
               child: Column(
                 children: [
-                  _field('clientNumber', 'Client number',
+                  _field('clientNumber', 'Номер клиента',
                       icon: Icons.tag_rounded,
                       keyboardType: TextInputType.number),
-                  _field('name', 'Full name',
+                  _field('name', 'ФИО',
                       icon: Icons.badge_rounded,
                       validator: (v) =>
-                          Validators.required(v, field: 'Name')),
-                  _field('phone', 'Phone',
+                          Validators.required(v, field: 'ФИО')),
+                  _field('phone', 'Телефон',
                       icon: Icons.phone_rounded,
                       keyboardType: TextInputType.phone,
                       validator: Validators.phone),
-                  _field('country', 'Country', icon: Icons.public_rounded),
-                  _field('city', 'City',
+                  _field('country', 'Страна', icon: Icons.public_rounded),
+                  _field('city', 'Город',
                       icon: Icons.location_city_rounded, isLast: true),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Arrival',
+              title: 'Прибытие',
               icon: Icons.flight_land_rounded,
               accent: ClientStatus.awaitingArrival.color,
               child: Column(
@@ -187,27 +187,27 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                     onTime: (t) => setState(() => _arrivalTime = t),
                   ),
                   const SizedBox(height: 12),
-                  _field('arrivalFlight', 'Flight number',
+                  _field('arrivalFlight', 'Номер рейса',
                       icon: Icons.confirmation_number_rounded, isLast: true),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Hotel',
+              title: 'Отель',
               icon: Icons.hotel_rounded,
               accent: ClientStatus.inHotel.color,
-              child: _field('hotel', 'Hotel name',
+              child: _field('hotel', 'Название отеля',
                   icon: Icons.apartment_rounded, isLast: true),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Doctor appointment',
+              title: 'Приём у врача',
               icon: Icons.medical_services_rounded,
               accent: ClientStatus.inTreatment.color,
               child: Column(
                 children: [
-                  _field('doctorName', 'Doctor name',
+                  _field('doctorName', 'Имя врача',
                       icon: Icons.health_and_safety_rounded),
                   _dateTimeRow(
                     date: _appointmentDate,
@@ -220,7 +220,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Departure',
+              title: 'Вылет',
               icon: Icons.flight_takeoff_rounded,
               accent: ClientStatus.departed.color,
               child: Column(
@@ -232,21 +232,21 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                     onTime: (t) => setState(() => _departureTime = t),
                   ),
                   const SizedBox(height: 12),
-                  _field('departureFlight', 'Return flight number',
+                  _field('departureFlight', 'Номер обратного рейса',
                       icon: Icons.confirmation_number_rounded, isLast: true),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Driver / meeting',
+              title: 'Водитель / встреча',
               icon: Icons.directions_car_rounded,
               accent: ClientStatus.met.color,
               child: Column(
                 children: [
-                  _field('driverName', 'Who meets the client',
+                  _field('driverName', 'Кто встречает клиента',
                       icon: Icons.person_pin_rounded),
-                  _field('driverPhone', 'Driver phone',
+                  _field('driverPhone', 'Телефон водителя',
                       icon: Icons.phone_in_talk_rounded,
                       keyboardType: TextInputType.phone,
                       isLast: true),
@@ -255,16 +255,16 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Status',
+              title: 'Статус',
               icon: Icons.flag_rounded,
               accent: _status.color,
               child: _statusSelector(),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Comment',
+              title: 'Комментарий',
               icon: Icons.notes_rounded,
-              child: _field('notes', 'Notes',
+              child: _field('notes', 'Заметки',
                   icon: null, maxLines: 4, isLast: true),
             ),
             const SizedBox(height: 24),
@@ -278,7 +278,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                           strokeWidth: 2.4, color: Colors.white),
                     )
                   : const Icon(Icons.check_rounded),
-              label: Text(widget.isEditing ? 'Save changes' : 'Save client'),
+              label: Text(widget.isEditing ? 'Сохранить изменения' : 'Сохранить клиента'),
             ),
           ],
         ),
@@ -323,7 +323,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
         Expanded(
           child: _PickerTile(
             icon: Icons.calendar_today_rounded,
-            label: 'Date',
+            label: 'Дата',
             value: Formatters.date(date),
             onTap: () async {
               final now = DateTime.now();
@@ -341,7 +341,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
         Expanded(
           child: _PickerTile(
             icon: Icons.schedule_rounded,
-            label: 'Time',
+            label: 'Время',
             value: time == null ? '—' : Formatters.timeOfDay(time),
             onTap: () async {
               final picked = await showTimePicker(

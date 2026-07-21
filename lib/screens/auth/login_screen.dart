@@ -56,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await auth.signOut();
         if (mounted) {
           setState(() => _error =
-              'This account is not active yet. Ask an administrator to enable it.');
+              'Аккаунт ещё не активирован. Обратитесь к администратору.');
         }
         return;
       }
@@ -71,11 +71,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on FirebaseException catch (e) {
       // Firestore/permission errors while resolving or bootstrapping profile.
       debugPrint('[login] FirebaseException (${e.plugin}): ${e.code} — ${e.message}');
-      setState(() => _error = 'Profile check failed: ${e.code}. '
-          '${e.code == 'permission-denied' ? 'Deploy the updated Firestore rules.' : (e.message ?? '')}');
+      setState(() => _error = 'Не удалось проверить профиль: ${e.code}. '
+          '${e.code == 'permission-denied' ? 'Разверните обновлённые правила Firestore.' : (e.message ?? '')}');
     } catch (e, st) {
       debugPrint('[login] unexpected error: $e\n$st');
-      setState(() => _error = 'Something went wrong: $e');
+      setState(() => _error = 'Что-то пошло не так: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -83,14 +83,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   String _messageFor(FirebaseAuthException e) {
     return switch (e.code) {
-      'invalid-email' => 'That email address is not valid.',
-      'user-disabled' => 'This account has been disabled.',
+      'invalid-email' => 'Некорректный адрес эл. почты.',
+      'user-disabled' => 'Этот аккаунт отключён.',
       'user-not-found' ||
       'wrong-password' ||
       'invalid-credential' =>
-        'Incorrect email or password.',
-      'too-many-requests' => 'Too many attempts. Try again later.',
-      _ => 'Unable to sign in. Please try again.',
+        'Неверная почта или пароль.',
+      'too-many-requests' => 'Слишком много попыток. Попробуйте позже.',
+      _ => 'Не удалось войти. Попробуйте ещё раз.',
     };
   }
 
@@ -118,7 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Row(
                       children: [
                         Text(
-                          'Welcome back',
+                          'С возвращением',
                           style: theme.textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Sign in to VIP Client Manager',
+                      'Вход в VIP Менеджер клиентов',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -140,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(
-                        labelText: 'Email',
+                        labelText: 'Эл. почта',
                         prefixIcon: Icon(Icons.mail_outline_rounded),
                       ),
                       validator: Validators.email,
@@ -153,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       autofillHints: const [AutofillHints.password],
                       onFieldSubmitted: (_) => _submit(),
                       decoration: InputDecoration(
-                        labelText: 'Password',
+                        labelText: 'Пароль',
                         prefixIcon: const Icon(Icons.lock_outline_rounded),
                         suffixIcon: IconButton(
                           icon: Icon(_obscure
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Sign in'),
+                          : const Text('Войти'),
                     ),
                   ],
                 ),

@@ -27,22 +27,22 @@ class ClientDetailScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete client?'),
+        title: const Text('Удалить клиента?'),
         content: Text(
-          'This permanently removes ${client.name.isEmpty ? 'this client' : client.name}. '
-          'This action cannot be undone.',
+          'Клиент ${client.name.isEmpty ? '' : '«${client.name}» '}будет удалён безвозвратно. '
+          'Отменить это действие нельзя.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Отмена'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: const Text('Удалить'),
           ),
         ],
       ),
@@ -54,12 +54,12 @@ class ClientDetailScreen extends ConsumerWidget {
       if (!context.mounted) return;
       Navigator.of(context).pop(); // leave detail screen
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Client deleted')),
+        const SnackBar(content: Text('Клиент удалён')),
       );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not delete: $e')),
+        SnackBar(content: Text('Не удалось удалить: $e')),
       );
     }
   }
@@ -71,7 +71,7 @@ class ClientDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Client details'),
+        title: const Text('Данные клиента'),
         actions: [
           clientAsync.maybeWhen(
             data: (client) => client == null
@@ -79,7 +79,7 @@ class ClientDetailScreen extends ConsumerWidget {
                 : Row(
                     children: [
                       IconButton(
-                        tooltip: 'Edit',
+                        tooltip: 'Изменить',
                         icon: const Icon(Icons.edit_rounded),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
@@ -89,7 +89,7 @@ class ClientDetailScreen extends ConsumerWidget {
                       ),
                       if (isAdmin)
                         IconButton(
-                          tooltip: 'Delete',
+                          tooltip: 'Удалить',
                           icon: const Icon(Icons.delete_outline_rounded),
                           onPressed: () =>
                               _confirmDelete(context, ref, client),
@@ -103,10 +103,10 @@ class ClientDetailScreen extends ConsumerWidget {
       ),
       body: clientAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load client: $e')),
+        error: (e, _) => Center(child: Text('Не удалось загрузить клиента: $e')),
         data: (client) {
           if (client == null) {
-            return const Center(child: Text('This client no longer exists.'));
+            return const Center(child: Text('Этого клиента больше нет.'));
           }
           return _DetailBody(client: client);
         },
@@ -131,28 +131,28 @@ class _DetailBody extends StatelessWidget {
         _HeroCard(client: client),
         gap,
         SectionCard(
-          title: 'Personal information',
+          title: 'Личные данные',
           icon: Icons.person_rounded,
           child: Column(
             children: [
               DetailRow(
                 icon: Icons.tag_rounded,
-                label: 'Client number',
+                label: 'Номер клиента',
                 value: Formatters.text(client.clientNumber),
               ),
               DetailRow(
                 icon: Icons.phone_rounded,
-                label: 'Phone',
+                label: 'Телефон',
                 value: Formatters.text(client.phone),
               ),
               DetailRow(
                 icon: Icons.public_rounded,
-                label: 'Country',
+                label: 'Страна',
                 value: Formatters.text(client.country),
               ),
               DetailRow(
                 icon: Icons.location_city_rounded,
-                label: 'City',
+                label: 'Город',
                 value: Formatters.text(client.city),
               ),
             ],
@@ -160,23 +160,23 @@ class _DetailBody extends StatelessWidget {
         ),
         gap,
         SectionCard(
-          title: 'Arrival',
+          title: 'Прибытие',
           icon: Icons.flight_land_rounded,
           child: Column(
             children: [
               DetailRow(
                 icon: Icons.calendar_today_rounded,
-                label: 'Date',
+                label: 'Дата',
                 value: Formatters.date(client.arrivalDate),
               ),
               DetailRow(
                 icon: Icons.schedule_rounded,
-                label: 'Time',
+                label: 'Время',
                 value: Formatters.time(client.arrivalTime),
               ),
               DetailRow(
                 icon: Icons.confirmation_number_rounded,
-                label: 'Flight',
+                label: 'Рейс',
                 value: Formatters.text(client.arrivalFlight),
               ),
             ],
@@ -184,33 +184,33 @@ class _DetailBody extends StatelessWidget {
         ),
         gap,
         SectionCard(
-          title: 'Hotel',
+          title: 'Отель',
           icon: Icons.hotel_rounded,
           child: DetailRow(
             icon: Icons.apartment_rounded,
-            label: 'Hotel',
+            label: 'Отель',
             value: Formatters.text(client.hotel),
           ),
         ),
         gap,
         SectionCard(
-          title: 'Doctor appointment',
+          title: 'Приём у врача',
           icon: Icons.medical_services_rounded,
           child: Column(
             children: [
               DetailRow(
                 icon: Icons.health_and_safety_rounded,
-                label: 'Doctor',
+                label: 'Врач',
                 value: Formatters.text(client.doctorName),
               ),
               DetailRow(
                 icon: Icons.calendar_today_rounded,
-                label: 'Date',
+                label: 'Дата',
                 value: Formatters.date(client.doctorAppointmentDate),
               ),
               DetailRow(
                 icon: Icons.schedule_rounded,
-                label: 'Time',
+                label: 'Время',
                 value: Formatters.time(client.doctorAppointmentTime),
               ),
             ],
@@ -218,23 +218,23 @@ class _DetailBody extends StatelessWidget {
         ),
         gap,
         SectionCard(
-          title: 'Departure',
+          title: 'Вылет',
           icon: Icons.flight_takeoff_rounded,
           child: Column(
             children: [
               DetailRow(
                 icon: Icons.calendar_today_rounded,
-                label: 'Date',
+                label: 'Дата',
                 value: Formatters.date(client.departureDate),
               ),
               DetailRow(
                 icon: Icons.schedule_rounded,
-                label: 'Time',
+                label: 'Время',
                 value: Formatters.time(client.departureTime),
               ),
               DetailRow(
                 icon: Icons.confirmation_number_rounded,
-                label: 'Return flight',
+                label: 'Обратный рейс',
                 value: Formatters.text(client.departureFlight),
               ),
             ],
@@ -242,18 +242,18 @@ class _DetailBody extends StatelessWidget {
         ),
         gap,
         SectionCard(
-          title: 'Driver / meeting',
+          title: 'Водитель / встреча',
           icon: Icons.directions_car_rounded,
           child: Column(
             children: [
               DetailRow(
                 icon: Icons.person_pin_rounded,
-                label: 'Who meets',
+                label: 'Кто встречает',
                 value: Formatters.text(client.driverName),
               ),
               DetailRow(
                 icon: Icons.phone_in_talk_rounded,
-                label: 'Driver phone',
+                label: 'Телефон водителя',
                 value: Formatters.text(client.driverPhone),
               ),
             ],
@@ -262,7 +262,7 @@ class _DetailBody extends StatelessWidget {
         if (client.notes.trim().isNotEmpty) ...[
           gap,
           SectionCard(
-            title: 'Comment',
+            title: 'Комментарий',
             icon: Icons.notes_rounded,
             child: Text(
               client.notes,

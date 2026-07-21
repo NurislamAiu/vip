@@ -107,32 +107,32 @@ class ClientCard extends StatelessWidget {
                   children: [
                     _InfoChip(
                       icon: Icons.flight_land_rounded,
-                      label: 'Arrival',
+                      label: 'Прибытие',
                       value: Formatters.dateTime(
                           client.arrivalDate, client.arrivalTime),
                     ),
                     _InfoChip(
                       icon: Icons.medical_services_rounded,
-                      label: 'Appointment',
+                      label: 'Приём',
                       value: Formatters.dateTime(client.doctorAppointmentDate,
                           client.doctorAppointmentTime),
                     ),
                     _InfoChip(
                       icon: Icons.flight_takeoff_rounded,
-                      label: 'Departure',
+                      label: 'Вылет',
                       value: Formatters.dateTime(
                           client.departureDate, client.departureTime),
                     ),
                     if (client.hotel.trim().isNotEmpty)
                       _InfoChip(
                         icon: Icons.hotel_rounded,
-                        label: 'Hotel',
+                        label: 'Отель',
                         value: client.hotel,
                       ),
                     if (client.driverName.trim().isNotEmpty)
                       _InfoChip(
                         icon: Icons.directions_car_rounded,
-                        label: 'Met by',
+                        label: 'Встречает',
                         value: client.driverName,
                       ),
                   ],

@@ -18,27 +18,27 @@ class ManagersScreen extends ConsumerWidget {
     final usersAsync = ref.watch(usersStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Staff & managers')),
+      appBar: AppBar(title: const Text('Сотрудники')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ManagerFormScreen()),
         ),
         icon: const Icon(Icons.person_add_rounded),
-        label: const Text('Add staff'),
+        label: const Text('Добавить'),
       ),
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => EmptyState(
           icon: Icons.cloud_off_rounded,
-          title: 'Could not load staff',
+          title: 'Не удалось загрузить сотрудников',
           message: '$e',
         ),
         data: (users) {
           if (users.isEmpty) {
             return const EmptyState(
               icon: Icons.group_outlined,
-              title: 'No staff yet',
-              message: 'Add your first manager to get started.',
+              title: 'Пока нет сотрудников',
+              message: 'Добавьте первого менеджера, чтобы начать.',
             );
           }
           return ListView.separated(
@@ -62,22 +62,22 @@ class _StaffTile extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove staff?'),
+        title: const Text('Удалить сотрудника?'),
         content: Text(
-          'This removes ${user.name}\'s access. The sign-in account itself '
-          'must be deleted from the Firebase console.',
+          'Доступ ${user.name} будет удалён. Сам аккаунт для входа нужно '
+          'удалить в консоли Firebase.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Отмена'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove'),
+            child: const Text('Удалить'),
           ),
         ],
       ),
@@ -88,7 +88,7 @@ class _StaffTile extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not remove: $e')));
+          .showSnackBar(SnackBar(content: Text('Не удалось удалить: $e')));
     }
   }
 
@@ -186,7 +186,7 @@ class _StaffTile extends ConsumerWidget {
                 value: 'edit',
                 child: ListTile(
                   leading: Icon(Icons.edit_rounded),
-                  title: Text('Edit'),
+                  title: Text('Изменить'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -197,7 +197,7 @@ class _StaffTile extends ConsumerWidget {
                     leading: Icon(user.isActive
                         ? Icons.block_rounded
                         : Icons.check_circle_rounded),
-                    title: Text(user.isActive ? 'Disable' : 'Enable'),
+                    title: Text(user.isActive ? 'Отключить' : 'Включить'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -206,7 +206,7 @@ class _StaffTile extends ConsumerWidget {
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete_outline_rounded),
-                    title: Text('Remove'),
+                    title: Text('Удалить'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -235,7 +235,7 @@ class _RolePill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        isAdmin ? 'Admin' : 'Manager',
+        isAdmin ? 'Админ' : 'Менеджер',
         style: TextStyle(
           color: color,
           fontSize: 11,
@@ -257,7 +257,7 @@ class _InactivePill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        'Disabled',
+        'Отключён',
         style: TextStyle(
           color: theme.colorScheme.error,
           fontSize: 11,
