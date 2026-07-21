@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Security model:
+//  - Unauthenticated users have no access at all.
+//  - Every request is gated on the caller having an *active* profile document.
+//  - Administrators: full read/write, including deletes and staff management.
+//  - Managers: read + create + update on clients; NO deletes; no staff writes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Reads the caller's own profile. get() bypasses rules, so this is safe
+    // to call from within other rules without recursion.
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isActive() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().isActive == true;
+    }
+
+    function isAdmin() {
+      return isActive() && profile().role == 'administrator';
+    }
+
+    match /users/{userId} {
+      // A user may read their own profile; admins may read anyone's.
+      allow read: if isActive() && (request.auth.uid == userId || isAdmin());
+      // Only admins create, edit, disable or remove staff.
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isActive();
+      allow create: if isActive();
+      allow update: if isActive();
+      // Deletion is administrator-only.
+      allow delete: if isAdmin();
+    }
+  }
+}
