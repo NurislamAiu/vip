@@ -269,10 +269,14 @@ class _HeroHeader extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          'С возвращением',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.85),
+                        Flexible(
+                          child: Text(
+                            'С возвращением',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -412,9 +416,12 @@ class _GlassIconButton extends StatelessWidget {
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: IconButton(
-        icon: Icon(icon, size: 20, color: Colors.white),
+        icon: Icon(icon, size: 19, color: Colors.white),
         tooltip: tooltip,
         onPressed: onPressed,
+        visualDensity: VisualDensity.compact,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 38, height: 38),
       ),
     );
   }
