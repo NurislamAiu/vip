@@ -26,8 +26,13 @@ dependencies:
   cloud_firestore: ^5.5.0
   firebase_messaging: ^15.1.5
 
-  # Local notifications (to surface FCM messages in foreground)
+  # Local notifications (foreground FCM + manager-scheduled reminders)
   flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.1
+
+  # Local settings persistence (per-device reminder preferences)
+  shared_preferences: ^2.3.2
 
   # Utilities
   intl: ^0.20.1

@@ -3,18 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/auto_status.dart';
 import '../../models/app_user.dart';
+import '../../models/client.dart';
 import '../../models/client_filter.dart';
 import '../../models/client_status.dart';
+import '../../models/reminder_settings.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/client_providers.dart';
 import '../../providers/repository_providers.dart';
+import '../../providers/settings_providers.dart';
 import '../../widgets/brand_mark.dart';
 import '../../widgets/client_card.dart';
 import '../../widgets/empty_state.dart';
 import '../client/client_detail_screen.dart';
 import '../client/client_form_screen.dart';
 import '../managers/managers_screen.dart';
+import '../settings/settings_screen.dart';
 
 /// The home dashboard: a premium hero header with live stats, search, quick
 /// filters, and the live client list.
@@ -56,11 +61,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
+  /// Auto-advance client statuses to match the schedule (auto-status mode).
+  void _reconcileStatuses(List<Client> clients) {
+    final now = DateTime.now();
+    final repo = ref.read(clientRepositoryProvider);
+    for (final c in clients) {
+      final expected = expectedStatus(c, now);
+      if (expected != c.status) {
+        repo.updateClient(c.copyWith(status: expected));
+      }
+    }
+  }
+
+  /// (Re)schedule reminders and optionally reconcile statuses.
+  void _applyAutomation(List<Client> clients, ReminderSettings settings) {
+    ref.read(reminderServiceProvider).sync(clients, settings);
+    if (settings.autoStatus) _reconcileStatuses(clients);
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider).valueOrNull;
     final clientsAsync = ref.watch(clientsStreamProvider);
     final filtered = ref.watch(filteredClientsProvider);
+
+    // Keep reminders + auto-status in sync with live data and settings.
+    ref.listen<AsyncValue<List<Client>>>(clientsStreamProvider, (_, next) {
+      final clients = next.valueOrNull;
+      if (clients != null) {
+        _applyAutomation(clients, ref.read(reminderSettingsProvider));
+      }
+    });
+    ref.listen<ReminderSettings>(reminderSettingsProvider, (_, next) {
+      final clients = ref.read(clientsStreamProvider).valueOrNull;
+      if (clients != null) _applyAutomation(clients, next);
+    });
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
@@ -234,6 +269,14 @@ class _HeroHeader extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => const ManagersScreen()),
                   ),
                 ),
+              const SizedBox(width: 8),
+              _GlassIconButton(
+                icon: Icons.tune_rounded,
+                tooltip: 'Настройки',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
+              ),
               const SizedBox(width: 8),
               _GlassIconButton(
                 icon: Icons.logout_rounded,

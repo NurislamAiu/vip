@@ -5,8 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'app/app.dart';
 import 'firebase_options.dart';
@@ -20,6 +23,15 @@ Future<void> main() async {
   // Formatters and the localized widgets render Russian month names.
   Intl.defaultLocale = 'ru';
   await initializeDateFormatting('ru', null);
+
+  // Time zones for scheduling local reminders on the device's clock.
+  tzdata.initializeTimeZones();
+  try {
+    final localTz = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(localTz));
+  } catch (_) {
+    // Fall back to UTC if the platform can't report the zone.
+  }
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
