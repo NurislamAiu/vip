@@ -33,36 +33,67 @@ class NotificationService {
   );
 
   Future<void> initialize() async {
-    await _messaging.requestPermission(alert: true, badge: true, sound: true);
+    // Messaging is best-effort: a failure here (permissions, no APNS token on
+    // the iOS simulator, offline, …) must never crash the app.
+    try {
+      await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
-    const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    );
-    await _local.initialize(initSettings);
+      const initSettings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      );
+      await _local.initialize(initSettings);
 
-    await _local
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(_channel);
+      await _local
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(_channel);
 
-    // Show the notification tray entry even for foreground iOS messages.
-    await _messaging.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+      // Show the notification tray entry even for foreground iOS messages.
+      await _messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    FirebaseMessaging.onMessage.listen(_showForeground);
+      FirebaseMessaging.onMessage.listen(_showForeground);
 
-    await _messaging.subscribeToTopic(AppConstants.staffTopic).catchError((_) {
-      // Topic subscription is best-effort; ignore transient failures.
-    });
+      // On Apple platforms FCM cannot mint a token or subscribe to a topic
+      // until the APNS token is available. On the simulator it may never
+      // arrive, so wait briefly and bail out gracefully if it doesn't.
+      final isApple = !kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.iOS ||
+              defaultTargetPlatform == TargetPlatform.macOS);
+      if (isApple && await _waitForApnsToken() == null) {
+        debugPrint(
+          'APNS token unavailable (likely an iOS simulator); skipping FCM '
+          'token and topic subscription.',
+        );
+        return;
+      }
 
-    if (kDebugMode) {
-      final token = await _messaging.getToken();
-      debugPrint('FCM token: $token');
+      await _messaging.subscribeToTopic(AppConstants.staffTopic).catchError((_) {
+        // Topic subscription is best-effort; ignore transient failures.
+      });
+
+      if (kDebugMode) {
+        final token = await _messaging.getToken();
+        debugPrint('FCM token: $token');
+      }
+    } catch (e) {
+      debugPrint('NotificationService.initialize skipped: $e');
     }
+  }
+
+  /// Polls for the APNS token for a few seconds. Returns it once available, or
+  /// `null` if it never arrives (e.g. push-less simulators).
+  Future<String?> _waitForApnsToken() async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      final token = await _messaging.getAPNSToken();
+      if (token != null) return token;
+      await Future<void>.delayed(const Duration(seconds: 1));
+    }
+    return _messaging.getAPNSToken();
   }
 
   void _showForeground(RemoteMessage message) {
