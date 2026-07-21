@@ -185,7 +185,7 @@ class _DiagnosticsCard extends ConsumerWidget {
                   label: 'APNS-токен',
                   value: d.apnsToken != null
                       ? 'есть'
-                      : 'нет (симулятор не выдаёт)',
+                      : 'нет (симулятор, либо не добавлена возможность Push)',
                 ),
               _TokenRow(token: d.fcmToken),
               const SizedBox(height: 10),

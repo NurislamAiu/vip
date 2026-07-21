@@ -86,8 +86,9 @@ class NotificationService {
               defaultTargetPlatform == TargetPlatform.macOS);
       if (isApple && await _waitForApnsToken() == null) {
         debugPrint(
-          'APNS token unavailable (likely an iOS simulator); skipping FCM '
-          'token and topic subscription.',
+          'APNS token unavailable — either a simulator, or the build is '
+          'missing the Push Notifications capability / permission. Skipping '
+          'FCM token and topic subscription.',
         );
         return;
       }
