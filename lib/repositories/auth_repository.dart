@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/constants/app_constants.dart';
 import '../models/app_user.dart';
+import '../models/user_role.dart';
 
 /// Wraps Firebase Authentication and resolves the signed-in user's profile
 /// document from the `users` collection.
@@ -40,5 +41,43 @@ class AuthRepository {
         .doc(uid)
         .snapshots()
         .map((doc) => doc.exists ? AppUser.fromDoc(doc) : null);
+  }
+
+  /// Resolves the signed-in user's profile after sign-in, bootstrapping one
+  /// when it is missing.
+  ///
+  /// Staff created by an administrator always have a profile document already;
+  /// the only accounts that reach here without one are those created directly
+  /// in the Firebase console (the first/owner account). For those we create an
+  /// **administrator** profile so the app is usable out of the box. Existing
+  /// profiles are returned untouched.
+  ///
+  /// Returns the resulting [AppUser], or `null` if there is no signed-in user.
+  Future<AppUser?> ensureProfile() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final ref =
+        _firestore.collection(AppConstants.usersCollection).doc(user.uid);
+
+    var snapshot = await ref.get();
+    if (!snapshot.exists) {
+      final fallbackName = (user.displayName?.trim().isNotEmpty ?? false)
+          ? user.displayName!.trim()
+          : (user.email?.split('@').first ?? 'Administrator');
+
+      await ref.set({
+        'name': fallbackName,
+        'phone': user.phoneNumber ?? '',
+        'email': user.email ?? '',
+        'role': UserRole.administrator.asString,
+        'isActive': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      snapshot = await ref.get();
+    }
+
+    return snapshot.exists ? AppUser.fromDoc(snapshot) : null;
   }
 }

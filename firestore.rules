@@ -29,10 +29,21 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // A user may read their own profile; admins may read anyone's.
-      allow read: if isActive() && (request.auth.uid == userId || isAdmin());
-      // Only admins create, edit, disable or remove staff.
-      allow create, update, delete: if isAdmin();
+      // A signed-in user may always read their OWN profile — even before it is
+      // set up or if it has been disabled — so the app can resolve state and
+      // show a clear message instead of a permission error. Admins read anyone.
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+      // Admins provision staff. A signed-in user may also create their OWN
+      // profile once — first-run bootstrap for the owner account created in the
+      // Firebase console (admin-provisioned staff already have a document).
+      allow create: if isAdmin()
+        || (isSignedIn()
+            && request.auth.uid == userId
+            && request.resource.data.isActive == true);
+
+      // Only admins edit, disable or remove staff.
+      allow update, delete: if isAdmin();
     }
 
     match /clients/{clientId} {

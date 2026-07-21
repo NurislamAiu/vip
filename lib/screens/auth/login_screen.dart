@@ -36,11 +36,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).signIn(
-            email: _emailController.text,
-            password: _passwordController.text,
-          );
-      // AuthGate reacts to the auth state change; nothing else to do.
+      final auth = ref.read(authRepositoryProvider);
+      await auth.signIn(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Sign-in succeeded at the auth level — now make sure this account has an
+      // active staff profile, otherwise the app would silently bounce back
+      // here. Bootstrap one when missing; block disabled accounts clearly.
+      final profile = await auth.ensureProfile();
+      if (profile == null || !profile.isActive) {
+        await auth.signOut();
+        if (mounted) {
+          setState(() => _error =
+              'This account is not active yet. Ask an administrator to enable it.');
+        }
+        return;
+      }
+      // AuthGate reacts to the profile becoming available; nothing else to do.
     } on FirebaseAuthException catch (e) {
       setState(() => _error = _messageFor(e));
     } catch (_) {
