@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../models/app_user.dart';
 import '../../models/client_filter.dart';
+import '../../models/client_status.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/client_providers.dart';
 import '../../providers/repository_providers.dart';
+import '../../widgets/brand_mark.dart';
 import '../../widgets/client_card.dart';
 import '../../widgets/empty_state.dart';
 import '../client/client_detail_screen.dart';
 import '../client/client_form_screen.dart';
 import '../managers/managers_screen.dart';
 
-/// The home dashboard: search, quick filters, and the live client list.
+/// The home dashboard: a premium hero header with live stats, search, quick
+/// filters, and the live client list.
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -67,12 +71,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         label: const Text('Add client'),
       ),
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           onRefresh: () async => ref.invalidate(clientsStreamProvider),
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
-              SliverToBoxAdapter(child: _Header(user: user)),
+              SliverToBoxAdapter(child: _HeroHeader(user: user)),
               const SliverToBoxAdapter(child: _SearchField()),
               const SliverToBoxAdapter(child: _FilterChips()),
               const SliverToBoxAdapter(child: SizedBox(height: 8)),
@@ -129,8 +134,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-class _Header extends ConsumerWidget {
-  const _Header({required this.user});
+/// Gradient hero card: greeting, VIP badge, quick actions and live counters.
+class _HeroHeader extends ConsumerWidget {
+  const _HeroHeader({required this.user});
 
   final AppUser? user;
 
@@ -160,44 +166,103 @@ class _Header extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Row(
+    final clients = ref.watch(clientsStreamProvider).valueOrNull ?? const [];
+    final now = DateTime.now();
+
+    bool sameDay(DateTime? d) =>
+        d != null && d.year == now.year && d.month == now.month && d.day == now.day;
+
+    final arrivingToday = clients.where((c) => sameDay(c.arrivalDate)).length;
+    final inTreatment =
+        clients.where((c) => c.status == ClientStatus.inTreatment).length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+      decoration: BoxDecoration(
+        gradient: AppColors.brandGradient,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.royal.withValues(alpha: 0.30),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome back',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+          Row(
+            children: [
+              const BrandMark(size: 42, glow: false),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Welcome back',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const VipTag(compact: true),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user?.name ?? 'VIP Manager',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (user?.isAdmin ?? false)
+                _GlassIconButton(
+                  icon: Icons.group_rounded,
+                  tooltip: 'Managers',
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ManagersScreen()),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  user?.name ?? 'VIP Manager',
-                  style: theme.textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          if (user?.isAdmin ?? false)
-            _RoundIconButton(
-              icon: Icons.group_rounded,
-              tooltip: 'Managers',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ManagersScreen()),
+              const SizedBox(width: 8),
+              _GlassIconButton(
+                icon: Icons.logout_rounded,
+                tooltip: 'Sign out',
+                onPressed: () => _confirmSignOut(context, ref),
               ),
-            ),
-          const SizedBox(width: 10),
-          _RoundIconButton(
-            icon: Icons.logout_rounded,
-            tooltip: 'Sign out',
-            onPressed: () => _confirmSignOut(context, ref),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Row(
+            children: [
+              _StatTile(
+                value: '${clients.length}',
+                label: 'Clients',
+                icon: Icons.people_alt_rounded,
+              ),
+              const SizedBox(width: 12),
+              _StatTile(
+                value: '$arrivingToday',
+                label: 'Arriving today',
+                icon: Icons.flight_land_rounded,
+              ),
+              const SizedBox(width: 12),
+              _StatTile(
+                value: '$inTreatment',
+                label: 'In treatment',
+                icon: Icons.medical_services_rounded,
+              ),
+            ],
           ),
         ],
       ),
@@ -205,8 +270,58 @@ class _Header extends ConsumerWidget {
   }
 }
 
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.value,
+    required this.label,
+    required this.icon,
+  });
+
+  final String value;
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 18),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  const _GlassIconButton({
     required this.icon,
     required this.tooltip,
     required this.onPressed,
@@ -218,13 +333,12 @@ class _RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Material(
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      color: Colors.white.withValues(alpha: 0.16),
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: IconButton(
-        icon: Icon(icon, size: 22),
+        icon: Icon(icon, size: 20, color: Colors.white),
         tooltip: tooltip,
         onPressed: onPressed,
       ),
@@ -239,7 +353,7 @@ class _SearchField extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(clientSearchProvider);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
       child: TextField(
         onChanged: (value) =>
             ref.read(clientSearchProvider.notifier).state = value,
@@ -266,18 +380,25 @@ class _FilterChips extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(clientFilterProvider);
     return SizedBox(
-      height: 44,
+      height: 48,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         itemCount: ClientFilter.values.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final filter = ClientFilter.values[index];
           final isSelected = filter == selected;
+          final theme = Theme.of(context);
           return ChoiceChip(
             label: Text(filter.label),
             selected: isSelected,
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isSelected
+                  ? theme.colorScheme.onPrimary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
             onSelected: (_) =>
                 ref.read(clientFilterProvider.notifier).state = filter,
           );

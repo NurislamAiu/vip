@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_theme.dart';
 import '../core/utils/formatters.dart';
 import '../models/client.dart';
 import 'status_badge.dart';
@@ -62,11 +63,20 @@ class ClientCard extends StatelessWidget {
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              Text(
-                                '#${Formatters.text(client.clientNumber)}',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w700,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.gold.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '#${Formatters.text(client.clientNumber)}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: AppColors.gold,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -143,7 +153,6 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final initials = name.trim().isEmpty
         ? '?'
         : name
@@ -157,14 +166,7 @@ class _Avatar extends StatelessWidget {
       height: 46,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.7),
-          ],
-        ),
+        gradient: AppColors.brandGradient,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(

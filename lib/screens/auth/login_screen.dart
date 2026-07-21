@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/validators.dart';
 import '../../providers/repository_providers.dart';
+import '../../widgets/brand_mark.dart';
 
 /// Email + password sign-in. On success the [AuthGate] swaps to the dashboard.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -78,28 +79,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.primary.withValues(alpha: 0.7),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(Icons.diamond_rounded,
-                          color: Colors.white, size: 36),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: BrandMark(size: 68),
                     ),
                     const SizedBox(height: 28),
-                    Text(
-                      'Welcome back',
-                      style: theme.textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                    Row(
+                      children: [
+                        Text(
+                          'Welcome back',
+                          style: theme.textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(width: 10),
+                        const VipTag(),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Text(
