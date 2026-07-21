@@ -77,7 +77,10 @@ class ClientCard extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 8),
                                     StatusBadge(
-                                        status: client.status, dense: true),
+                                      status: client.status,
+                                      dense: true,
+                                      filled: true,
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
