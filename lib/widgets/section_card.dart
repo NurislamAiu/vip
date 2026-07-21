@@ -62,7 +62,10 @@ class SectionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          child,
+          // Transparent Material so ListTile-based children (Switch/Radio tiles)
+          // have a Material ancestor and their ink/background paint correctly
+          // over this colored container.
+          Material(type: MaterialType.transparency, child: child),
         ],
       ),
     );

@@ -63,19 +63,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       debugPrint('[login] success — refreshing profile stream for the gate');
       // The profile stream may have errored/closed earlier (e.g. it subscribed
       // before the bootstrap doc existed and got permission-denied). Re-create
-      // it so AuthGate picks up the now-existing, active profile.
-      ref.invalidate(currentUserProvider);
+      // it so AuthGate picks up the now-existing, active profile. If the gate
+      // already advanced, this widget is gone — guard against using a disposed
+      // ref.
+      if (mounted) ref.invalidate(currentUserProvider);
     } on FirebaseAuthException catch (e) {
       debugPrint('[login] FirebaseAuthException: ${e.code} — ${e.message}');
-      setState(() => _error = _messageFor(e));
+      if (mounted) setState(() => _error = _messageFor(e));
     } on FirebaseException catch (e) {
       // Firestore/permission errors while resolving or bootstrapping profile.
       debugPrint('[login] FirebaseException (${e.plugin}): ${e.code} — ${e.message}');
-      setState(() => _error = 'Не удалось проверить профиль: ${e.code}. '
-          '${e.code == 'permission-denied' ? 'Разверните обновлённые правила Firestore.' : (e.message ?? '')}');
+      if (mounted) {
+        setState(() => _error = 'Не удалось проверить профиль: ${e.code}. '
+            '${e.code == 'permission-denied' ? 'Разверните обновлённые правила Firestore.' : (e.message ?? '')}');
+      }
     } catch (e, st) {
       debugPrint('[login] unexpected error: $e\n$st');
-      setState(() => _error = 'Что-то пошло не так: $e');
+      if (mounted) setState(() => _error = 'Что-то пошло не так: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
