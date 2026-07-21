@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../core/constants/app_constants.dart';
 import '../models/app_user.dart';
@@ -55,17 +56,24 @@ class AuthRepository {
   /// Returns the resulting [AppUser], or `null` if there is no signed-in user.
   Future<AppUser?> ensureProfile() async {
     final user = _auth.currentUser;
-    if (user == null) return null;
+    if (user == null) {
+      debugPrint('[auth] ensureProfile: no signed-in user');
+      return null;
+    }
 
     final ref =
         _firestore.collection(AppConstants.usersCollection).doc(user.uid);
 
+    debugPrint('[auth] ensureProfile: reading users/${user.uid}…');
     var snapshot = await ref.get();
+    debugPrint('[auth] ensureProfile: exists=${snapshot.exists}');
+
     if (!snapshot.exists) {
       final fallbackName = (user.displayName?.trim().isNotEmpty ?? false)
           ? user.displayName!.trim()
           : (user.email?.split('@').first ?? 'Administrator');
 
+      debugPrint('[auth] ensureProfile: bootstrapping administrator profile…');
       await ref.set({
         'name': fallbackName,
         'phone': user.phoneNumber ?? '',
@@ -75,6 +83,7 @@ class AuthRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      debugPrint('[auth] ensureProfile: profile created');
       snapshot = await ref.get();
     }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,17 +20,34 @@ class AuthGate extends ConsumerWidget {
 
     return authState.when(
       loading: () => const SplashScreen(),
-      error: (_, _) => const LoginScreen(),
+      error: (e, _) {
+        debugPrint('[gate] authState error: $e -> login');
+        return const LoginScreen();
+      },
       data: (user) {
-        if (user == null) return const LoginScreen();
+        if (user == null) {
+          debugPrint('[gate] no user -> login');
+          return const LoginScreen();
+        }
 
         // Signed in with Firebase — now resolve the staff profile.
         final profile = ref.watch(currentUserProvider);
         return profile.when(
-          loading: () => const SplashScreen(),
-          error: (_, _) => const LoginScreen(),
-          data: (appUser) =>
-              appUser == null ? const LoginScreen() : const DashboardScreen(),
+          loading: () {
+            debugPrint('[gate] profile loading -> splash');
+            return const SplashScreen();
+          },
+          error: (e, _) {
+            debugPrint('[gate] profile error: $e -> login');
+            return const LoginScreen();
+          },
+          data: (appUser) {
+            debugPrint('[gate] profile resolved: '
+                '${appUser == null ? 'null -> login' : 'ok -> dashboard'}');
+            return appUser == null
+                ? const LoginScreen()
+                : const DashboardScreen();
+          },
         );
       },
     );

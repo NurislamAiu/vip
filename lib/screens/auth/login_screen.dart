@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,15 +38,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = true);
     try {
       final auth = ref.read(authRepositoryProvider);
+      debugPrint('[login] signing in as "${_emailController.text.trim()}"…');
       await auth.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
+      debugPrint('[login] signIn OK, uid=${auth.currentUser?.uid}');
 
       // Sign-in succeeded at the auth level — now make sure this account has an
       // active staff profile, otherwise the app would silently bounce back
       // here. Bootstrap one when missing; block disabled accounts clearly.
       final profile = await auth.ensureProfile();
+      debugPrint('[login] ensureProfile -> '
+          '${profile == null ? 'null' : 'role=${profile.role.asString}, active=${profile.isActive}'}');
       if (profile == null || !profile.isActive) {
         await auth.signOut();
         if (mounted) {
@@ -54,11 +59,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
         return;
       }
+      debugPrint('[login] success — AuthGate should swap to dashboard');
       // AuthGate reacts to the profile becoming available; nothing else to do.
     } on FirebaseAuthException catch (e) {
+      debugPrint('[login] FirebaseAuthException: ${e.code} — ${e.message}');
       setState(() => _error = _messageFor(e));
-    } catch (_) {
-      setState(() => _error = 'Something went wrong. Please try again.');
+    } on FirebaseException catch (e) {
+      // Firestore/permission errors while resolving or bootstrapping profile.
+      debugPrint('[login] FirebaseException (${e.plugin}): ${e.code} — ${e.message}');
+      setState(() => _error = 'Profile check failed: ${e.code}. '
+          '${e.code == 'permission-denied' ? 'Deploy the updated Firestore rules.' : (e.message ?? '')}');
+    } catch (e, st) {
+      debugPrint('[login] unexpected error: $e\n$st');
+      setState(() => _error = 'Something went wrong: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
