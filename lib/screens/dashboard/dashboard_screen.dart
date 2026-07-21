@@ -107,11 +107,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async => ref.invalidate(clientsStreamProvider),
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: RefreshIndicator(
+              onRefresh: () async => ref.invalidate(clientsStreamProvider),
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
               SliverToBoxAdapter(child: _HeroHeader(user: user)),
               const SliverToBoxAdapter(child: _SearchField()),
               const SliverToBoxAdapter(child: _FilterChips()),
@@ -144,7 +147,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
                     sliver: SliverList.separated(
                       itemCount: filtered.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final client = filtered[index];
                         return ClientCard(
@@ -162,6 +165,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 },
               ),
             ],
+              ),
+            ),
           ),
         ),
       ),

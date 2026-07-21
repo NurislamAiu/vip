@@ -111,7 +111,11 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       if (widget.isEditing) {
         await repo.updateClient(client);
       } else {
-        await repo.createClient(client, createdBy: currentUser.id);
+        await repo.createClient(
+          client,
+          createdBy: currentUser.id,
+          createdByName: currentUser.name,
+        );
       }
       if (!mounted) return;
       Navigator.of(context).pop();

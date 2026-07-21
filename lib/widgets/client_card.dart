@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
+import '../core/utils/auto_status.dart';
 import '../core/utils/formatters.dart';
 import '../models/client.dart';
 import 'status_badge.dart';
 
-/// A single client row on the dashboard: identity up top, status pill on the
-/// right, and a compact grid of the key logistics below.
+/// A compact, scannable client row: a status-colored accent stripe, identity,
+/// the single most relevant upcoming event, and who added the client. Kept
+/// short on purpose so long VIP lists stay readable.
 class ClientCard extends StatelessWidget {
   const ClientCard({super.key, required this.client, required this.onTap});
 
@@ -17,115 +19,206 @@ class ClientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final event = _nextEvent(client);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-          boxShadow: isDark
-              ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _Avatar(name: client.name),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          borderRadius: BorderRadius.circular(18),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(width: 5, color: client.status.color),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+                      child: Row(
                         children: [
-                          Text(
-                            Formatters.text(client.name),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                          _Avatar(name: client.name, color: client.status.color),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        Formatters.text(client.name),
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    StatusBadge(
+                                        status: client.status, dense: true),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                _MetaLine(
+                                  icon: event.icon,
+                                  iconColor: client.status.color,
+                                  text: event.text,
+                                  strong: true,
+                                ),
+                                const SizedBox(height: 3),
+                                _MetaLine(
+                                  icon: Icons.call_rounded,
+                                  text: _subtitle(client),
+                                ),
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            Formatters.text(client.phone),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: theme.colorScheme.outline,
+                            size: 22,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    StatusBadge(status: client.status, dense: true),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _InfoChip(
-                      icon: Icons.flight_land_rounded,
-                      label: 'Прибытие',
-                      value: Formatters.dateTime(
-                          client.arrivalDate, client.arrivalTime),
-                    ),
-                    _InfoChip(
-                      icon: Icons.medical_services_rounded,
-                      label: 'Приём',
-                      value: Formatters.dateTime(client.doctorAppointmentDate,
-                          client.doctorAppointmentTime),
-                    ),
-                    _InfoChip(
-                      icon: Icons.flight_takeoff_rounded,
-                      label: 'Вылет',
-                      value: Formatters.dateTime(
-                          client.departureDate, client.departureTime),
-                    ),
-                    if (client.hotel.trim().isNotEmpty)
-                      _InfoChip(
-                        icon: Icons.hotel_rounded,
-                        label: 'Отель',
-                        value: client.hotel,
-                      ),
-                    if (client.driverName.trim().isNotEmpty)
-                      _InfoChip(
-                        icon: Icons.directions_car_rounded,
-                        label: 'Встречает',
-                        value: client.driverName,
-                      ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  String _subtitle(Client c) {
+    final phone = Formatters.text(c.phone);
+    if (c.createdByName.trim().isNotEmpty) {
+      return '$phone  ·  ${c.createdByName.trim()}';
+    }
+    return phone;
+  }
+
+  /// The soonest upcoming event; if all are past, the most recent one.
+  _EventInfo _nextEvent(Client c) {
+    final now = DateTime.now();
+    final events = <_EventInfo>[
+      _EventInfo(
+        Icons.flight_land_rounded,
+        'Прибытие',
+        combineDateTime(c.arrivalDate, c.arrivalTime),
+        Formatters.dateTime(c.arrivalDate, c.arrivalTime),
+      ),
+      _EventInfo(
+        Icons.medical_services_rounded,
+        'Приём',
+        combineDateTime(c.doctorAppointmentDate, c.doctorAppointmentTime),
+        Formatters.dateTime(
+            c.doctorAppointmentDate, c.doctorAppointmentTime),
+      ),
+      _EventInfo(
+        Icons.flight_takeoff_rounded,
+        'Вылет',
+        combineDateTime(c.departureDate, c.departureTime),
+        Formatters.dateTime(c.departureDate, c.departureTime),
+      ),
+    ].where((e) => e.when != null).toList();
+
+    if (events.isEmpty) {
+      return _EventInfo(Icons.event_busy_rounded, '', null, 'Нет дат');
+    }
+
+    final upcoming = events.where((e) => !e.when!.isBefore(now)).toList()
+      ..sort((a, b) => a.when!.compareTo(b.when!));
+    final chosen = upcoming.isNotEmpty
+        ? upcoming.first
+        : (events..sort((a, b) => b.when!.compareTo(a.when!))).first;
+
+    return _EventInfo(
+      chosen.icon,
+      chosen.label,
+      chosen.when,
+      '${chosen.label}: ${chosen.text}',
+    );
+  }
+}
+
+class _EventInfo {
+  const _EventInfo(this.icon, this.label, this.when, this.text);
+  final IconData icon;
+  final String label;
+  final DateTime? when;
+  final String text;
+}
+
+class _MetaLine extends StatelessWidget {
+  const _MetaLine({
+    required this.icon,
+    required this.text,
+    this.iconColor,
+    this.strong = false,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color? iconColor;
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon,
+            size: 14,
+            color: iconColor ?? theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: strong
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurfaceVariant,
+              fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _Avatar extends StatelessWidget {
-  const _Avatar({required this.name});
+  const _Avatar({required this.name, required this.color});
 
   final String name;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -138,71 +231,21 @@ class _Avatar extends StatelessWidget {
             .map((w) => w[0].toUpperCase())
             .join();
     return Container(
-      width: 46,
-      height: 46,
+      width: 44,
+      height: 44,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         gradient: AppColors.brandGradient,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: color.withValues(alpha: 0.6), width: 2),
       ),
       child: Text(
         initials,
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w700,
-          fontSize: 16,
+          fontSize: 15,
         ),
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest
-            .withValues(alpha: theme.brightness == Brightness.dark ? 0.5 : 0.6),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 7),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 10,
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                value,
-                style: theme.textTheme.labelMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

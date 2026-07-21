@@ -314,6 +314,22 @@ class _HeroCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
+          if (client.createdByName.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person_add_alt_rounded,
+                    size: 15, color: Colors.white.withValues(alpha: 0.8)),
+                const SizedBox(width: 6),
+                Text(
+                  'Добавил: ${client.createdByName.trim()}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
           Text(
             'СТАТУС',

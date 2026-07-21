@@ -34,10 +34,15 @@ class ClientRepository {
         );
   }
 
-  Future<String> createClient(Client client, {required String createdBy}) async {
+  Future<String> createClient(
+    Client client, {
+    required String createdBy,
+    String createdByName = '',
+  }) async {
     final ref = await _col.add({
       ...client.toMap(),
       'createdBy': createdBy,
+      'createdByName': createdByName,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });

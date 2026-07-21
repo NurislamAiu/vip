@@ -43,8 +43,11 @@ Future<void> main() async {
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
-  // Register the background message handler before runApp.
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // Register the background message handler before runApp (mobile only —
+  // web background messaging needs a service worker we don't ship).
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
 
   final container = ProviderContainer();
   // Fire-and-forget: set up FCM + local notifications without blocking launch.

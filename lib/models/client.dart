@@ -30,6 +30,7 @@ class Client {
     this.status = ClientStatus.awaitingArrival,
     this.notes = '',
     this.createdBy = '',
+    this.createdByName = '',
     this.createdAt,
     this.updatedAt,
   });
@@ -55,6 +56,7 @@ class Client {
   final ClientStatus status;
   final String notes;
   final String createdBy;
+  final String createdByName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -83,6 +85,7 @@ class Client {
       status: ClientStatus.fromString(map['status'] as String?),
       notes: (map['notes'] ?? '') as String,
       createdBy: (map['createdBy'] ?? '') as String,
+      createdByName: (map['createdByName'] ?? '') as String,
       createdAt: toDate(map['createdAt']),
       updatedAt: toDate(map['updatedAt']),
     );
@@ -177,6 +180,7 @@ class Client {
       status: status ?? this.status,
       notes: notes ?? this.notes,
       createdBy: createdBy,
+      createdByName: createdByName,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
