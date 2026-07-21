@@ -56,13 +56,18 @@ class NotificationService {
     // Messaging is best-effort: a failure here (permissions, no APNS token on
     // the iOS simulator, offline, …) must never crash the app.
     try {
-      await _messaging.requestPermission(alert: true, badge: true, sound: true);
+      debugPrint('[fcm] initialize: start (web=$kIsWeb, platform=$defaultTargetPlatform)');
+
+      final perm =
+          await _messaging.requestPermission(alert: true, badge: true, sound: true);
+      debugPrint('[fcm] permission: ${perm.authorizationStatus.name}');
 
       const initSettings = InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(),
       );
       await _local.initialize(initSettings);
+      debugPrint('[fcm] local notifications initialized');
 
       await _local
           .resolvePlatformSpecificImplementation<
@@ -76,7 +81,11 @@ class NotificationService {
         sound: true,
       );
 
-      FirebaseMessaging.onMessage.listen(_showForeground);
+      FirebaseMessaging.onMessage.listen((m) {
+        debugPrint('[fcm] foreground message: ${m.notification?.title} / '
+            '${m.notification?.body} (data: ${m.data})');
+        _showForeground(m);
+      });
 
       // On Apple platforms FCM cannot mint a token or subscribe to a topic
       // until the APNS token is available. On the simulator it may never
@@ -84,34 +93,46 @@ class NotificationService {
       final isApple = !kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
               defaultTargetPlatform == TargetPlatform.macOS);
-      if (isApple && await _waitForApnsToken() == null) {
-        debugPrint(
-          'APNS token unavailable — either a simulator, or the build is '
-          'missing the Push Notifications capability / permission. Skipping '
-          'FCM token and topic subscription.',
-        );
-        return;
+      if (isApple) {
+        final apns = await _waitForApnsToken();
+        debugPrint('[fcm] APNS token: ${apns == null ? 'NULL (нет)' : 'получен'}');
+        if (apns == null) {
+          debugPrint(
+            '[fcm] APNS token unavailable — simulator, or build is missing '
+            'Push Notifications capability / permission denied. Skipping FCM '
+            'token and topic subscription.',
+          );
+          return;
+        }
       }
 
-      await _messaging.subscribeToTopic(AppConstants.staffTopic).catchError((_) {
-        // Topic subscription is best-effort; ignore transient failures.
-      });
-
-      if (kDebugMode) {
+      try {
         final token = await _messaging.getToken();
-        debugPrint('FCM token: $token');
+        debugPrint('[fcm] FCM token: ${token ?? 'NULL'}');
+      } catch (e) {
+        debugPrint('[fcm] getToken FAILED: $e');
       }
-    } catch (e) {
-      debugPrint('NotificationService.initialize skipped: $e');
+
+      try {
+        await _messaging.subscribeToTopic(AppConstants.staffTopic);
+        debugPrint('[fcm] subscribed to topic "${AppConstants.staffTopic}"');
+      } catch (e) {
+        debugPrint('[fcm] subscribeToTopic FAILED: $e');
+      }
+
+      debugPrint('[fcm] initialize: done');
+    } catch (e, st) {
+      debugPrint('[fcm] initialize FAILED: $e\n$st');
     }
   }
 
-  /// Polls for the APNS token for a few seconds. Returns it once available, or
-  /// `null` if it never arrives (e.g. push-less simulators).
+  /// Polls for the APNS token for several seconds. Returns it once available,
+  /// or `null` if it never arrives (simulator / no push capability).
   Future<String?> _waitForApnsToken() async {
-    for (var attempt = 0; attempt < 3; attempt++) {
+    for (var attempt = 0; attempt < 6; attempt++) {
       final token = await _messaging.getAPNSToken();
       if (token != null) return token;
+      debugPrint('[fcm] APNS token not ready (try ${attempt + 1}/6)…');
       await Future<void>.delayed(const Duration(seconds: 1));
     }
     return _messaging.getAPNSToken();
