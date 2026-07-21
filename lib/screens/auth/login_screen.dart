@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/validators.dart';
+import '../../providers/auth_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../widgets/brand_mark.dart';
 
@@ -59,8 +60,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
         return;
       }
-      debugPrint('[login] success — AuthGate should swap to dashboard');
-      // AuthGate reacts to the profile becoming available; nothing else to do.
+      debugPrint('[login] success — refreshing profile stream for the gate');
+      // The profile stream may have errored/closed earlier (e.g. it subscribed
+      // before the bootstrap doc existed and got permission-denied). Re-create
+      // it so AuthGate picks up the now-existing, active profile.
+      ref.invalidate(currentUserProvider);
     } on FirebaseAuthException catch (e) {
       debugPrint('[login] FirebaseAuthException: ${e.code} — ${e.message}');
       setState(() => _error = _messageFor(e));
