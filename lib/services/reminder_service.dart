@@ -121,6 +121,8 @@ class ReminderService {
           iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
       debugPrint('ReminderService schedule "$idKey" failed: $e');
