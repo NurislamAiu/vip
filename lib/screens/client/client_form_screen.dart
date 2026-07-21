@@ -8,6 +8,7 @@ import '../../models/client_status.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../widgets/section_card.dart';
+import '../../widgets/status_picker.dart';
 
 /// Create a new client, or edit an existing one when [client] is provided.
 ///
@@ -224,7 +225,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               title: 'Статус',
               icon: Icons.flag_rounded,
               accent: _status.color,
-              child: _statusSelector(),
+              child: StatusPicker(
+                value: _status,
+                onChanged: (s) => setState(() => _status = s),
+              ),
             ),
             const SizedBox(height: 16),
             SectionCard(
@@ -322,30 +326,6 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     );
   }
 
-  Widget _statusSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: ClientStatus.values.map((status) {
-        final selected = status == _status;
-        return ChoiceChip(
-          avatar: Icon(
-            status.icon,
-            size: 16,
-            color: selected ? Colors.white : status.color,
-          ),
-          label: Text(status.label),
-          selected: selected,
-          selectedColor: status.color,
-          labelStyle: TextStyle(
-            color: selected ? Colors.white : null,
-            fontWeight: FontWeight.w600,
-          ),
-          onSelected: (_) => setState(() => _status = status),
-        );
-      }).toList(),
-    );
-  }
 }
 
 class _PickerTile extends StatelessWidget {

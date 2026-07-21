@@ -10,6 +10,7 @@ import '../../providers/repository_providers.dart';
 import '../../widgets/detail_row.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/status_picker.dart';
 import 'client_form_screen.dart';
 
 /// Full, block-by-block view of a single client. Stays live via the stream, so
@@ -115,20 +116,43 @@ class ClientDetailScreen extends ConsumerWidget {
   }
 }
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.client});
 
   final Client client;
 
+  Future<void> _changeStatus(BuildContext context, WidgetRef ref) async {
+    final picked =
+        await showStatusPickerSheet(context, current: client.status);
+    if (picked == null || picked == client.status) return;
+    try {
+      await ref
+          .read(clientRepositoryProvider)
+          .updateClient(client.copyWith(status: picked));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Статус изменён: ${picked.label}')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Не удалось изменить статус: $e')),
+      );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final gap = const SizedBox(height: 16);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
       children: [
-        _HeroCard(client: client),
+        _HeroCard(
+          client: client,
+          onChangeStatus: () => _changeStatus(context, ref),
+        ),
         gap,
         SectionCard(
           title: 'Личные данные',
@@ -251,9 +275,10 @@ class _DetailBody extends StatelessWidget {
 }
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.client});
+  const _HeroCard({required this.client, required this.onChangeStatus});
 
   final Client client;
+  final VoidCallback onChangeStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -289,18 +314,52 @@ class _HeroCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
-          const SizedBox(height: 18),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: StatusBadge(status: client.status),
+          const SizedBox(height: 20),
+          Text(
+            'СТАТУС',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.75),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
             ),
+          ),
+          const SizedBox(height: 8),
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onChangeStatus,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    StatusBadge(status: client.status),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.expand_more_rounded,
+                      size: 20,
+                      color: client.status.color,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.touch_app_rounded,
+                  size: 14, color: Colors.white.withValues(alpha: 0.75)),
+              const SizedBox(width: 6),
+              Text(
+                'Нажмите, чтобы изменить статус',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
+              ),
+            ],
           ),
         ],
       ),
