@@ -18,8 +18,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.vip"
+        // Store/application ID. Kept separate from `namespace` (the code
+        // package) so the Kotlin sources don't need repackaging.
+        applicationId = "kz.toitayev.com"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Firebase Auth requires API 23+.
